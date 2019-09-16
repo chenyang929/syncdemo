@@ -3,6 +3,7 @@
 package grace
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -22,11 +23,11 @@ func New(addr string, handler http.Handler, graceful bool) (*Grace, error) {
 	var ln net.Listener
 	var err error
 	if graceful {
-		log.Warn("grace", zap.String("new", "Listening to existing file descriptor 3."))
+		log.Println("Listening to existing file descriptor 3.")
 		f := os.NewFile(3, "")
 		ln, err = net.FileListener(f)
 	} else {
-		log.Warn("grace", zap.String("new", "Listening on a new file descriptor."))
+		log.Println("Listening on a new file descriptor.")
 		ln, err = net.Listen("tcp", addr)
 	}
 	if err != nil {
@@ -45,9 +46,9 @@ func New(addr string, handler http.Handler, graceful bool) (*Grace, error) {
 func (g *Grace) Start() {
 	go func() {
 		if err := g.Server.Serve(g.Listener); err != nil {
-			log.Error("start", zap.String("server.Serve err", err.Error()))
+			log.Println(err)
 		} else {
-			log.Warn("start", zap.String("server.Serve", "Shutdown old server..."))
+			log.Println("Shutdown old server...")
 		}
 	}()
 
@@ -57,7 +58,7 @@ func (g *Grace) Start() {
 func (g *Grace) reload() error {
 	tl, ok := g.Listener.(*net.TCPListener)
 	if !ok {
-		return errors.New("listener is not tcp listener")
+		return fmt.Errorf("%s", "listener is not tcp listener")
 	}
 	f, err := tl.File()
 	if err != nil {
@@ -78,25 +79,25 @@ func (g *Grace) watchSign() {
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR2)
 	for {
 		sig := <-ch
-		log.Info("watchSign", zap.String("signal", sig.String()))
+		log.Println("watchSign", sig.String())
 		switch sig {
 		case syscall.SIGINT, syscall.SIGTERM:
 			// stop
-			log.Info("watchSign", zap.String("stop", "stop server..."))
+			log.Println("watchSign", "stop server...")
 			signal.Stop(ch)
 			if err := g.Server.Shutdown(); err != nil {
-				log.Error("watchSign", zap.String("server shutdown err", err.Error()))
+				log.Println("watchSign", err)
 			}
 			return
 		case syscall.SIGUSR2:
 			// reload
-			log.Info("watchSign", zap.String("reload", "reload server..."))
+			log.Println("watchSign", "reload server...")
 			err := g.reload()
 			if err != nil {
-				log.Error("watchSign", zap.String("reload server err", err.Error()))
+				log.Println("watchSign", err)
 			}
 			if err := g.Server.Shutdown(); err != nil {
-				log.Error("watchSign", zap.String("server shutdown err", err.Error()))
+				log.Println("watchSign", err)
 			}
 			return
 		}
