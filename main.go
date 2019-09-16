@@ -6,7 +6,7 @@ import (
 )
 
 func sayhelloName(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello Wrold!") //这个写入到w的是输出到客户端的
+	fmt.Fprintf(w, "Hello Go!") //这个写入到w的是输出到客户端的
 }
 
 func main() {
