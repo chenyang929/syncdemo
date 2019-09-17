@@ -14,11 +14,10 @@ start(){
               echo "reload the process [ $i ]"
               kill -SIGUSR2 $i
           done
-	    sleep 2
-        fi
-	pid=`pgrep ${process}`
-	echo "new process id: ${pid}"
-    fi
+      fi
+      sleep 1
+      pid=`pgrep ${process}`
+      echo "new process id: ${pid}"
 }
 
 stop(){
