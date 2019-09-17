@@ -1,22 +1,19 @@
 #!/usr/bin/env bash
 
-process="ipserving"
-echo ${process} $1 $2
+process="syncdemo"
+echo ${process} $1
 
 start(){
-    if [ "$2"x = ""x ];then
-        echo "miss conf file"
-    else
-        pid=`pgrep ${process}`
-        if [ "${pid}"x = ""x ];then
-            echo "start new process..."
-            nohup ./${process} -c $2 >/dev/null 2>&1 &
-        else
-            for i in ${pid}
-            do
-                echo "reload the process [ $i ]"
-                kill -USR2 $i
-            done
+      pid=`pgrep ${process}`
+      if [ "${pid}"x = ""x ];then
+          echo "start new process..."
+          nohup ./${process} >/dev/null 2>&1 &
+      else
+          for i in ${pid}
+          do
+              echo "reload the process [ $i ]"
+              kill -SIGUSR2 $i
+          done
 	    sleep 2
         fi
 	pid=`pgrep ${process}`
@@ -41,9 +38,9 @@ status(){
 
 case "$1" in
     start)
-	start $1 $2;;
+	start $1;;
     reload)
-	start $1 $2;;
+	start $1;;
     stop)
 	stop ;;
     status)
