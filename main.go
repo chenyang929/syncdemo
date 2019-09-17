@@ -1,11 +1,12 @@
 package main
+
 import (
 	"flag"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"syncdemo/grace"
+	"syncdemo/gracehttp"
 )
 
 var bs []byte
@@ -36,11 +37,15 @@ func sayhelloName(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	router := getRouter()
-	host := "127.0.0.1:9090"
-	graceServer, err := grace.New(host, router, *graceful)
+	host := ":9090"
+	//graceServer, err := grace.New(host, router, *graceful)
+	//if err != nil {
+	//	log.Println(err)
+	//	return
+	//}
+	//graceServer.Start()
+	err := gracehttp.ListenAndServe(host, router)
 	if err != nil {
 		log.Println(err)
-		return
 	}
-	graceServer.Start()
 }
